@@ -91,9 +91,15 @@ def stations():
     session = Session(engine)
     query_result = session.query(Stations.station,Stations.name).all()
     session.close()
-    
-    station_dict = dict(query_result)
-    return jsonify(station_dict)
+    #create an empty list to get all the key value pairs from the above query results by looping and appending the list
+    stations_list = []
+    for station,name in query_result:
+        stations_dict = {}
+        stations_dict['Station'] = station
+        stations_dict['Name'] = name
+        stations_list.append(stations_dict)
+
+    return jsonify(stations_list)
     
 #################################################
 # Tobs Route 
@@ -106,10 +112,32 @@ def tobs():
     query_tobs = session.query(Measurements.date,Measurements.tobs).\
         filter(Measurements.station ==  'USC00519281').filter(Measurements.date > query_date).all()
     session.close()
+    #create an empty list to get all the key value pairs from the above query results by looping and appending the list
+    tobs_list = []
+    for date,tobs in query_tobs:
+        tobs_dict = {}
+        tobs_dict['date'] = date
+        tobs_dict['temperature'] = tobs
+        tobs_list.append(tobs_dict)
+    return jsonify(tobs_list)
     
-    tobs_dict = dict(query_tobs)
-    return jsonify(tobs_dict)
-    
+#################################################
+# start and start/end route
+# @app.route("/api/v1.0/<start>")
+# def start_date(start):
+#     session = Session(engine)
+#     query_start = session.query(Measurements.date,func.min(Measurements.tobs),\
+#                                 func.max(Measurements.tobs),func.avg(Measurements.tobs)).filter(Measurements.date>=start).all()
+#     session.close()
+#     start_list = []
+#     for date,min,max,avg in query_start:
+#         start_dict = {}
+#         start_dict['date'] = date
+#         start_dict['min'] = min
+#         start_dict['max'] = max
+#         start_dict['average'] = avg
+#         start_list.append(start_dict)
+#     return jsonify(start_list)
 
 if __name__ == '__main__':
     app.run(debug=True)

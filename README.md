@@ -67,5 +67,6 @@ Now that you’ve completed your initial analysis, you’ll design a Flask API b
 
     + Use the Flask jsonify function to convert your API data to a valid JSON response object.
 
+The surfs up folder contains the scipt for the queries and app. The resources folder has all the required csv and database files.
 
 

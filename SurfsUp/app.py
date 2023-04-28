@@ -23,16 +23,6 @@ Base.prepare(autoload_with=engine)
 # reflect the tables
 Base.classes.keys()
 
-# list the columns for measurement  and station table
-inspector = inspect(engine)
-columns = inspector.get_columns('measurement')
-for c in columns:
-    print(c['name'], c["type"])
-
-inspector = inspect(engine)
-columns = inspector.get_columns('station')
-for c in columns:
-    print(c['name'], c["type"])
 # Save references to each table
 Measurements = Base.classes.measurement
 Stations = Base.classes.station
@@ -49,6 +39,7 @@ app = Flask(__name__)
 #################################################
 # Flask Routes
 #################################################
+# State the available routes
 @app.route("/")
 def welcome():
     """List all available api routes."""
@@ -57,10 +48,12 @@ def welcome():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/start<br/>"
+        f"Enter the date in the format yyyy-mm-dd instead of start/end '<br/>"
+        f"/api/v1.0/start <br>"
         f"/api/v1.0/start/end"
         )
 #################################################
+# for all the routes decorators and functions will be used
 # Precipitation Route
 
 @app.route("/api/v1.0/precipitation")
@@ -106,7 +99,7 @@ def stations():
 @app.route("/api/v1.0/tobs")
 def tobs():
     recent_date = dt.datetime(2017, 8, 23)
-# Calculate the date one year from the last date in data set.
+    # Calculate the date one year from the last date in data set.
     query_date = recent_date - dt.timedelta(days = 366)
     session = Session(engine)
     query_tobs = session.query(Measurements.date,Measurements.tobs).\
@@ -123,21 +116,38 @@ def tobs():
     
 #################################################
 # start and start/end route
-# @app.route("/api/v1.0/<start>")
-# def start_date(start):
-#     session = Session(engine)
-#     query_start = session.query(Measurements.date,func.min(Measurements.tobs),\
-#                                 func.max(Measurements.tobs),func.avg(Measurements.tobs)).filter(Measurements.date>=start).all()
-#     session.close()
-#     start_list = []
-#     for date,min,max,avg in query_start:
-#         start_dict = {}
-#         start_dict['date'] = date
-#         start_dict['min'] = min
-#         start_dict['max'] = max
-#         start_dict['average'] = avg
-#         start_list.append(start_dict)
-#     return jsonify(start_list)
+@app.route("/api/v1.0/<start>")
+def start_date(start):
+    session = Session(engine)
+    query_start = session.query(func.min(Measurements.tobs),\
+                                func.max(Measurements.tobs),func.avg(Measurements.tobs)).filter(Measurements.date>=start).all()
+    session.close()
+    start_list = []
+    for min,max,avg in query_start:
+        start_dict = {}
+        start_dict['Min'] = min
+        start_dict['Max'] = max
+        start_dict['Average'] = avg
+        start_list.append(start_dict)
+    return jsonify(start_list)
+
+#create an empty list to get all the key value pairs from the above query results by looping and appending the list
+
+@app.route("/api/v1.0/<start>/<end>")
+def start_end_date(start,end):
+    session = Session(engine)
+    query_start_end = session.query(func.min(Measurements.tobs),\
+                                func.max(Measurements.tobs),func.avg(Measurements.tobs)).\
+                                filter(Measurements.date>=start).filter(Measurements.date<=end).all()
+    session.close()
+    start_end_list = []
+    for min,max,avg in query_start_end:
+        start_end_dict = {}
+        start_end_dict['Min'] = min
+        start_end_dict['Max'] = max
+        start_end_dict['Average'] = avg
+        start_end_list.append(start_end_dict)
+    return jsonify(start_end_list)
 
 if __name__ == '__main__':
     app.run(debug=True)

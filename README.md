@@ -1,5 +1,5 @@
 # SQLalchemy-challenge
-This requirements for this challenge are divided intwo parts:
+The requirements for this challenge are divided in two parts:
 
 ## Part 1: Analyze and Explore the Climate Data
 ### Precipitation Analysis
